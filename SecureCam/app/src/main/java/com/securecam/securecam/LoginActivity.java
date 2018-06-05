@@ -53,7 +53,7 @@ import static android.Manifest.permission.READ_CONTACTS;
  */
 public class LoginActivity extends AppCompatActivity {
 
-    protected static final String IPANDPORT = "http://192.168.1.221:3000";
+    protected static final String IPANDPORT = "http://192.168.1.75:3000";
 
     private String loginUrl = IPANDPORT + "/verify";
 
@@ -132,6 +132,7 @@ public class LoginActivity extends AppCompatActivity {
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
         private final String mPassword;
+        private boolean isOn = false;
 
         UserLoginTask(String password) {
             mPassword = password;
@@ -148,28 +149,17 @@ public class LoginActivity extends AppCompatActivity {
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
                 urlConnection.setDoInput(true);
-                //urlConnection.setDoOutput(true);
 
                 urlConnection.setRequestProperty("Content-Type", "application/json");
                 urlConnection.setRequestProperty("password", mPassword);
 
                 urlConnection.setRequestMethod("GET");
 
-                // Send the post body
-                /*if (!mPassword.isEmpty()) {
-                    OutputStreamWriter writer = new OutputStreamWriter(urlConnection.getOutputStream());
-                    writer.write(mPassword);
-                    writer.flush();
-                }*/
-
                 int statusCode = urlConnection.getResponseCode();
 
                 if (statusCode ==  200) {
-                    /*
                     InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
-                    String response = convertInputStreamToString(inputStream);
-                    JSONObject mainObject = new JSONObject(response);
-                    */
+                    isOn = convertInputStreamToString(inputStream).equals("true");
                     return true;
                 } else {
                     //We'll let the failed Post-Execute handle the false
@@ -177,7 +167,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
 
             } catch (Exception e) {
-                Log.e("TAG", e.getLocalizedMessage());
+                Log.e("TAG", e.getMessage());
                 return false;
             }
         }
@@ -190,6 +180,7 @@ public class LoginActivity extends AppCompatActivity {
                 Intent intentBundle = new Intent(LoginActivity.this, MainActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putString("password", mPassword);
+                bundle.putBoolean("isOn", isOn);
                 intentBundle.putExtras(bundle);
                 startActivity(intentBundle);
             } else {

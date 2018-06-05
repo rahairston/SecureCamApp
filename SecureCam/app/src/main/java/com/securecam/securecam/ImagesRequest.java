@@ -4,28 +4,29 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Map;
 
-public class CameraRequest extends AsyncTask<Void, Void, Boolean> {
+public class ImagesRequest extends AsyncTask<Void, Void, Boolean> {
+
+    final String imgURL = LoginActivity.IPANDPORT + "/pictures";
 
     // This is the data we are sending
-    String cameraURL = LoginActivity.IPANDPORT;
-    private boolean onorOff;
+    String mPassword;
 
-    Map<String, String> postData;
+    //Arraylist of strings
+    ArrayList<String> images;
 
     // This is a constructor that allows you to pass in the JSON body
-    public CameraRequest(Map<String, String> data) {
-        onorOff = (data.get("switch").equals("on")) ? true : false;
-        cameraURL += "/" + data.get("switch");
-
-        postData = new HashMap<String, String>();
-        postData.put("password", data.get("password"));
+    public ImagesRequest(String password) {
+        mPassword = password;
+        images = new ArrayList<>();
     }
 
 
@@ -35,31 +36,26 @@ public class CameraRequest extends AsyncTask<Void, Void, Boolean> {
 
         try {
             // This is getting the url from the string we passed in
-            URL url = new URL(cameraURL);
+            URL url = new URL(imgURL);
 
             // Create the urlConnection
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
 
             urlConnection.setDoInput(true);
-            urlConnection.setDoOutput(true);
 
             urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.setRequestProperty("password", mPassword);
 
-            urlConnection.setRequestMethod("POST");
-
-            if (this.postData != null) {
-                OutputStreamWriter writer = new OutputStreamWriter(urlConnection.getOutputStream());
-                writer.write(postData.toString());
-                writer.flush();
-            }
+            urlConnection.setRequestMethod("GET");
 
             int statusCode = urlConnection.getResponseCode();
 
             if (statusCode ==  200) {
 
-                InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+            InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+            convertInputStreamToString(inputStream); //convert to JSON (look at Graph?)
 
-                return true;
+            return true;
             } else {
                 //We'll let the failed Post-Execute handle the false
                 return false;
@@ -76,11 +72,23 @@ public class CameraRequest extends AsyncTask<Void, Void, Boolean> {
         if (success) {
             //MainActivity.setRiskArrays(riskTimes, pushDuration, liftDuration, pushFrequency, liftFrequency);
         } else {
-            Log.e("ERROR", "Error turning camera on or off");
+            Log.e("ERROR", "Error requesting Images");
         }
     }
 
     @Override
     protected void onCancelled() {
     }
+
+    private static void convertInputStreamToString(InputStream inputStream) throws IOException {
+        BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
+        String line = "";
+        while((line = bufferedReader.readLine()) != null) {
+            //result += line;
+            Log.e("LINE", line);
+        }
+
+        inputStream.close();
+    }
 }
+
