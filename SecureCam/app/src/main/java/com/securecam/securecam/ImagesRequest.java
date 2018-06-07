@@ -3,6 +3,10 @@ package com.securecam.securecam;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -53,7 +57,8 @@ public class ImagesRequest extends AsyncTask<Void, Void, Boolean> {
             if (statusCode ==  200) {
 
             InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
-            convertInputStreamToString(inputStream); //convert to JSON (look at Graph?)
+
+            processReturnInput(inputStream);
 
             return true;
             } else {
@@ -70,7 +75,7 @@ public class ImagesRequest extends AsyncTask<Void, Void, Boolean> {
     @Override
     protected void onPostExecute(final Boolean success) {
         if (success) {
-            //MainActivity.setRiskArrays(riskTimes, pushDuration, liftDuration, pushFrequency, liftFrequency);
+            MainActivity.populateImages(images);
         } else {
             Log.e("ERROR", "Error requesting Images");
         }
@@ -80,15 +85,24 @@ public class ImagesRequest extends AsyncTask<Void, Void, Boolean> {
     protected void onCancelled() {
     }
 
-    private static void convertInputStreamToString(InputStream inputStream) throws IOException {
+    private void processReturnInput(InputStream inputStream) throws IOException, JSONException {
         BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
         String line = "";
+        String result = "";
         while((line = bufferedReader.readLine()) != null) {
-            //result += line;
+            result += line;
             Log.e("LINE", line);
         }
 
         inputStream.close();
+
+        JSONObject data = new JSONObject(result);
+
+        JSONArray folders = data.getJSONArray("pictures");
+
+        for (int i = 0; i < folders.length(); i++) {
+            images.add(folders.getString(i));
+        }
     }
 }
 
