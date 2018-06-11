@@ -3,8 +3,15 @@ package com.securecam.securecam;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -17,15 +24,19 @@ public class CameraRequest extends AsyncTask<Void, Void, Boolean> {
     String cameraURL = LoginActivity.IPANDPORT;
     private boolean onorOff;
 
-    Map<String, String> postData;
+    JSONObject postData;
 
     // This is a constructor that allows you to pass in the JSON body
     public CameraRequest(Map<String, String> data) {
         onorOff = (data.get("switch").equals("on")) ? true : false;
         cameraURL += "/" + data.get("switch");
 
-        postData = new HashMap<String, String>();
-        postData.put("password", data.get("password"));
+        postData = new JSONObject();
+        try {
+            postData.put("password", data.get("password"));
+        } catch (JSONException e) {
+            Log.e("Error", "JSON error");
+        }
     }
 
 
@@ -56,12 +67,8 @@ public class CameraRequest extends AsyncTask<Void, Void, Boolean> {
             int statusCode = urlConnection.getResponseCode();
 
             if (statusCode ==  200) {
-
-                InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
-
                 return true;
             } else {
-                //We'll let the failed Post-Execute handle the false
                 return false;
             }
 
@@ -74,9 +81,15 @@ public class CameraRequest extends AsyncTask<Void, Void, Boolean> {
     @Override
     protected void onPostExecute(final Boolean success) {
         if (success) {
-            //MainActivity.setRiskArrays(riskTimes, pushDuration, liftDuration, pushFrequency, liftFrequency);
+            if (onorOff) {
+                //turning camera on
+                MainActivity.makeSession();
+            } else {
+                //turning camera off
+                MainActivity.endSession();
+            }
         } else {
-            Log.e("ERROR", "Error turning camera on or off");
+            Log.e("ERROR", "Error turning camera on or off: " + cameraURL);
         }
     }
 

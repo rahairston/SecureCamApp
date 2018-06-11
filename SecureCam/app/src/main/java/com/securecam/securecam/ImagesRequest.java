@@ -91,7 +91,6 @@ public class ImagesRequest extends AsyncTask<Void, Void, Boolean> {
         String result = "";
         while((line = bufferedReader.readLine()) != null) {
             result += line;
-            Log.e("LINE", line);
         }
 
         inputStream.close();
