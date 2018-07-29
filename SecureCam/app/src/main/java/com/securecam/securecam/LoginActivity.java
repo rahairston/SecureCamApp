@@ -53,7 +53,7 @@ import static android.Manifest.permission.READ_CONTACTS;
  */
 public class LoginActivity extends AppCompatActivity {
 
-    protected static final String IPANDPORT = "http://192.168.1.221:3000";
+    protected static final String IPANDPORT = "http://192.168.1.105:3000";
 
     private String loginUrl = IPANDPORT + "/verify";
 

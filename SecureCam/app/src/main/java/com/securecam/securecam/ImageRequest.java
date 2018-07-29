@@ -1,10 +1,20 @@
 package com.securecam.securecam;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -17,6 +27,7 @@ public class ImageRequest extends AsyncTask<Void, Void, Boolean> {
     // This is the data we are sending
     String img;
     String mPassword;
+    Bitmap image;
 
     // This is a constructor that allows you to pass in the JSON body
     public ImageRequest(Map<String, String> data) {
@@ -49,6 +60,7 @@ public class ImageRequest extends AsyncTask<Void, Void, Boolean> {
             if (statusCode ==  200) {
 
                 InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                image = BitmapFactory.decodeStream(inputStream);
 
                 return true;
             } else {
@@ -65,7 +77,7 @@ public class ImageRequest extends AsyncTask<Void, Void, Boolean> {
     @Override
     protected void onPostExecute(final Boolean success) {
         if (success) {
-            //MainActivity.setRiskArrays(riskTimes, pushDuration, liftDuration, pushFrequency, liftFrequency);
+            MainActivity.setImage(img, image);
         } else {
             Log.e("ERROR", "Error requesting Image: " + img);
         }

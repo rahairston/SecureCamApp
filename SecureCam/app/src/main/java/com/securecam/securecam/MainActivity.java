@@ -1,6 +1,7 @@
 package com.securecam.securecam;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Camera;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TableLayout;
@@ -25,7 +27,7 @@ import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
-    private String password;
+    private static String password;
     private boolean isOn;
     private static ArrayList<String> images;
     private static HashMap<String, RecyclerView> folderLayouts;
@@ -104,14 +106,27 @@ public class MainActivity extends AppCompatActivity {
 
             linear.addView(rv);
         }
+
+        /* gets all images. Tested and works for individual images
+
+        String test = "7-29-2018/ok.jpg";
+
+        HashMap<String,String> temp = new HashMap<>();
+        temp.put("image", test);
+        temp.put("password", password);
+
+        ImageRequest req = new ImageRequest(temp);
+        req.execute((Void) null);*/
     }
 
     /**
      * Called upon turning on the camera.
      * Set's up the Session title box and
      * the Session RecycleView
+     * We may not use the newFolder due to the fact that we would get double
+     * pictures
      */
-    protected static void makeSession() {
+    protected static void makeSession(String newFolder) {
         TextView t = new TextView(linear.getContext());
         t.setText("Session");
         t.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -137,5 +152,13 @@ public class MainActivity extends AppCompatActivity {
     protected static void endSession() {
         linear.removeView(folderLayouts.get("Session"));
         linear.removeView(linear.findViewById(R.id.sessiontitle));
+    }
+
+    protected static void setImage(String imagePath, Bitmap image) {
+        ImageView i = new ImageView((linear.getContext()));
+        i.setImageBitmap(image);
+        linear.addView(i);
+
+        //set on click to make fullscreen?
     }
 }
