@@ -65,7 +65,7 @@ public class SnapshotRequest extends AsyncTask<Void, Void, Boolean> {
     @Override
     protected void onPostExecute(final Boolean success) {
         if (success) {
-            MainActivity.openImage(image);
+            MainActivity.openImage(image, "snapshot");
         } else {
             Log.e("ERROR", "Error taking snapshot");
         }

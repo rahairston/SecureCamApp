@@ -90,6 +90,14 @@ public class LoginActivity extends AppCompatActivity {
                 attemptLogin();
             }
         });
+
+        //go straight to main activity for debugging
+        Intent intentBundle = new Intent(LoginActivity.this, MainActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("password", "Champ");
+        bundle.putBoolean("isOn", false);
+        intentBundle.putExtras(bundle);
+        startActivity(intentBundle);
     }
 
     /**

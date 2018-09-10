@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.github.chrisbanes.photoview.PhotoView;
 
@@ -28,16 +29,18 @@ import com.github.chrisbanes.photoview.PhotoView;
 public class ImageFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "image";
+    private static final String IMAGE_ARG = "image";
+    private static final String NAME_ARG = "name";
 
     // TODO: Rename and change types of parameters
     private byte[] byteArr;
     private Bitmap bmp;
+    private String name;
     private PhotoView image;
     private ImageView closeButton;
     private ImageView saveButton;
+    private TextView nameText;
     private ImageFragment fragment;
-    private ConstraintLayout layout;
 
     private OnFragmentInteractionListener mListener;
 
@@ -53,10 +56,11 @@ public class ImageFragment extends Fragment {
      * @return A new instance of fragment ImageFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static ImageFragment newInstance(byte[] b) {
+    public static ImageFragment newInstance(byte[] b, String name) {
         ImageFragment fragment = new ImageFragment();
         Bundle args = new Bundle();
-        args.putByteArray(ARG_PARAM1, b);
+        args.putByteArray(IMAGE_ARG, b);
+        args.putString(NAME_ARG, name);
         fragment.setArguments(args);
         return fragment;
     }
@@ -65,7 +69,8 @@ public class ImageFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            byteArr = getArguments().getByteArray(ARG_PARAM1);
+            name = getArguments().getString(NAME_ARG);
+            byteArr = getArguments().getByteArray(IMAGE_ARG);
             bmp = BitmapFactory.decodeByteArray(byteArr, 0, byteArr.length);
         }
     }
@@ -76,7 +81,8 @@ public class ImageFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_image, container, false);
         fragment = this;
 
-        layout = (ConstraintLayout)view.findViewById(R.id.constraint);
+        nameText = (TextView)view.findViewById(R.id.name);
+        nameText.setText(name);
 
         closeButton = (ImageView)view.findViewById(R.id.closeButton);
         closeButton.setElevation(1);

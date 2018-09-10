@@ -44,7 +44,8 @@ public class MainActivity extends AppCompatActivity implements ImageFragment.OnF
 
     //Images/ImageRequest data
     private static ArrayList<String> images;
-    private static LinearLayout linear;
+    private static LinearLayout back;
+    private static LinearLayout headers;
 
     //Snapshot request things
     private static ImageButton snapshot;
@@ -67,7 +68,8 @@ public class MainActivity extends AppCompatActivity implements ImageFragment.OnF
         Intent intentBundle = getIntent();
         password = intentBundle.getStringExtra("password");
         isOn = intentBundle.getBooleanExtra("isOn", false);
-        linear = findViewById(R.id.sections);
+        back = (LinearLayout)findViewById(R.id.back);
+        headers = (LinearLayout)findViewById(R.id.headers);
 
         snapshot = (ImageButton) findViewById(R.id.snapshot);
         snapshot.setOnClickListener(new View.OnClickListener() {
@@ -79,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements ImageFragment.OnF
                 anim.setRepeatCount(Animation.INFINITE);
                 anim.setDuration(700);
                 snapshot.startAnimation(anim);
-                linear.setAlpha(0.7f);
+                back.setAlpha(0.7f);
                 HashMap<String, String> data = new HashMap<>();
                 data.put("password", password);
                 SnapshotRequest req = new SnapshotRequest(data);
@@ -129,28 +131,19 @@ public class MainActivity extends AppCompatActivity implements ImageFragment.OnF
 
         String[] folders = Arrays.copyOf(uniqueFolders.toArray(), uniqueFolders.size(), String[].class);
 
-        Log.e("HERE", "HEREEEEEEE: " + folders.length);
 
         for (int i = 0; i < uniqueFolders.size(); i++) {
             String text = folders[i];
-            TextView t = new TextView(linear.getContext());
-            t.setText(text);
+            TextView t = new TextView(headers.getContext());
+            t.setText(text + " >");
             t.setGravity(Gravity.CENTER_HORIZONTAL);
             t.setTextSize(20);
 
-            linear.addView(t);
+            //Dropdown listener will request images when the text is clicked
+            t.setOnClickListener(new DropDownListener(text, images, password));
+
+            headers.addView(t);
         }
-
-        /* gets all images. Tested and works for individual images
-
-        String test = "7-29-2018/ok.jpg";
-
-        HashMap<String,String> temp = new HashMap<>();
-        temp.put("image", test);
-        temp.put("password", password);
-
-        ImageRequest req = new ImageRequest(temp);
-        req.execute((Void) null);*/
     }
 
     /**
@@ -160,14 +153,14 @@ public class MainActivity extends AppCompatActivity implements ImageFragment.OnF
      * pictures
      */
     protected static void makeSession(String newFolder) {
-        TextView t = new TextView(linear.getContext());
+        TextView t = new TextView(headers.getContext());
         t.setText("Session");
         t.setGravity(Gravity.CENTER_HORIZONTAL);
         t.setTextSize(20);
         t.setId(R.id.sessiontitle);
 
         //put at index 1 since index 0 is the switch
-        linear.addView(t, 1);
+        headers.addView(t, 1);
     }
 
     /**
@@ -175,32 +168,39 @@ public class MainActivity extends AppCompatActivity implements ImageFragment.OnF
      * Destroys the Session text
      */
     protected static void endSession() {
-        linear.removeView(linear.findViewById(R.id.sessiontitle));
+        headers.removeView(headers.findViewById(R.id.sessiontitle));
     }
 
-    protected static void setImage(String imagePath, Bitmap image) {
-        ImageView i = new ImageView((linear.getContext()));
+    protected static void setImage(String imagePath, final Bitmap image) {
+        final String name = imagePath.split("/")[1];
+        ImageView i = new ImageView((headers.getContext()));
         i.setImageBitmap(image);
-        linear.addView(i);
+        i.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openImage(image, name);
+            }
+        });
+        headers.addView(i);
 
-        //set on click to openImage
+        //TODO: put linear layout inside of scrolling, and format incoming images
     }
 
     /**
      * Opens the image in a fragment
      * @param image
      */
-    protected static void openImage(Bitmap image) {
+    protected static void openImage(Bitmap image, String imageName) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         image.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         byte[] b = stream.toByteArray();
         inFragment = true;
         snapshot.setAnimation(null);
         snapshot.setImageResource(android.R.drawable.ic_menu_camera);
-        linear.setAlpha(1.0f);
+        back.setAlpha(1.0f);
         FragmentManager fragmentManager = ((Activity)context).getFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        ImageFragment fragment = ImageFragment.newInstance(b);
+        ImageFragment fragment = ImageFragment.newInstance(b, imageName);
         fragmentTransaction.add(R.id.layout, fragment);
         fragmentTransaction.commit();
     }
