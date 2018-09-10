@@ -39,6 +39,7 @@ public class ImageFragment extends Fragment {
     private PhotoView image;
     private ImageView closeButton;
     private ImageView saveButton;
+    private ImageView deleteButton;
     private TextView nameText;
     private ImageFragment fragment;
 
@@ -103,6 +104,9 @@ public class ImageFragment extends Fragment {
 
         saveButton = (ImageView)view.findViewById(R.id.saveButton);
         saveButton.setElevation(1);
+
+        deleteButton = (ImageView)view.findViewById(R.id.deleteButton);
+        deleteButton.setElevation(1);
 
         image = (PhotoView) view.findViewById(R.id.image);
         image.setImageBitmap(bmp);
