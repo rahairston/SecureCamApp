@@ -6,6 +6,8 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +23,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -41,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
@@ -53,17 +57,24 @@ import static android.Manifest.permission.READ_CONTACTS;
  */
 public class LoginActivity extends AppCompatActivity {
 
-    protected static final String IPANDPORT = "http://192.168.1.221:3000";
+    protected static final String IPANDPORT = "http://10.10.90.234:3000";
 
-    private String loginUrl = IPANDPORT + "/verify";
+    private String loginUrl = IPANDPORT + "/login";
+
+    Handler handler;
+
+    private final int ERROR = 1;
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
     private UserLoginTask mAuthTask = null;
+    private String message;
 
     // UI references.
     private EditText mPasswordView;
+    private EditText mUsernameView;
+    private TextView mErrorView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,20 +82,38 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         // Set up the login form.
 
+        mUsernameView = (EditText) findViewById(R.id.username);
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
+        mErrorView = findViewById(R.id.error);
+//        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+//            @Override
+//            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+//                if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
+//                    attemptLogin();
+//                    return true;
+//                }
+//                return false;
+//            }
+//        });
+
+        handler = new Handler() {
+            public void handleMessage(Message msg) {
+                final int what = msg.what;
+                switch(what) {
+                    case ERROR: updateError(); break;
                 }
-                return false;
+            }
+        };
+
+        mErrorView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((TextView) view).setText("");
             }
         });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.loginButton);
-        mEmailSignInButton.setOnClickListener(new OnClickListener() {
+        Button mSignInButton = (Button) findViewById(R.id.loginButton);
+        mSignInButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
@@ -102,17 +131,26 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
+        mUsernameView.setError(null);
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
+        String username = mUsernameView.getText().toString();
         String password = mPasswordView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
+        if (TextUtils.isEmpty(username)) {
+            mUsernameView.setError("The username cannot be empty");
+            focusView = mUsernameView;
+            cancel = true;
+        }
+
+        // Check for a valid password, if the user entered one.
         if (TextUtils.isEmpty(password)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
+            mPasswordView.setError("The password cannot be empty");
             focusView = mPasswordView;
             cancel = true;
         }
@@ -120,9 +158,13 @@ public class LoginActivity extends AppCompatActivity {
         if (cancel) {
             focusView.requestFocus();
         } else {
-            mAuthTask = new UserLoginTask(password);
+            mAuthTask = new UserLoginTask(username, password);
             mAuthTask.execute((Void) null);
         }
+    }
+
+    public void updateError() {
+        mErrorView.setText(message);
     }
 
     /**
@@ -131,11 +173,17 @@ public class LoginActivity extends AppCompatActivity {
      */
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
-        private final String mPassword;
+        private String authorization;
         private boolean isOn = false;
 
-        UserLoginTask(String password) {
-            mPassword = password;
+        UserLoginTask(String username, String password) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(username)
+                .append(":")
+                .append(password);
+            try {
+                authorization = "Basic " + Base64.encodeToString(sb.toString().getBytes("utf-8"), Base64.DEFAULT);
+            } catch (UnsupportedEncodingException e) {authorization = "";}
         }
 
         @Override
@@ -151,7 +199,7 @@ public class LoginActivity extends AppCompatActivity {
                 urlConnection.setDoInput(true);
 
                 urlConnection.setRequestProperty("Content-Type", "application/json");
-                urlConnection.setRequestProperty("password", mPassword);
+                urlConnection.setRequestProperty("Authorization", authorization);
 
                 urlConnection.setRequestMethod("GET");
 
@@ -163,11 +211,20 @@ public class LoginActivity extends AppCompatActivity {
                     return true;
                 } else {
                     //We'll let the failed Post-Execute handle the false
+                    switch (statusCode) {
+                        case 401:
+                            message = "Username or password may be incorrect";
+                            break;
+                        default:
+                            message = statusCode + " " + urlConnection.getResponseMessage();
+                    }
+
                     return false;
                 }
 
             } catch (Exception e) {
                 Log.e("TAG", e.getMessage());
+                message = e.getMessage();
                 return false;
             }
         }
@@ -179,13 +236,12 @@ public class LoginActivity extends AppCompatActivity {
             if (success) {
                 Intent intentBundle = new Intent(LoginActivity.this, MainActivity.class);
                 Bundle bundle = new Bundle();
-                bundle.putString("password", mPassword);
+                bundle.putString("authorization", authorization);
                 bundle.putBoolean("isOn", isOn);
                 intentBundle.putExtras(bundle);
                 startActivity(intentBundle);
             } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+                handler.sendEmptyMessage(ERROR);
             }
         }
 

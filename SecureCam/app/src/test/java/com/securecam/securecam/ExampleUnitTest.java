@@ -1,6 +1,10 @@
 package com.securecam.securecam;
 
+import android.util.Base64;
+
 import org.junit.Test;
+
+import java.io.UnsupportedEncodingException;
 
 import static org.junit.Assert.*;
 
