@@ -25,6 +25,7 @@ public class CameraRequest extends AsyncTask<Void, Void, Boolean> {
     private boolean onorOff;
 
     JSONObject postData;
+    String newFolder;
 
     // This is a constructor that allows you to pass in the JSON body
     public CameraRequest(Map<String, String> data) {
@@ -66,6 +67,11 @@ public class CameraRequest extends AsyncTask<Void, Void, Boolean> {
 
             int statusCode = urlConnection.getResponseCode();
 
+            if (onorOff) {
+                InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                processReturnInput(inputStream);
+            }
+
             if (statusCode ==  200) {
                 return true;
             } else {
@@ -83,7 +89,7 @@ public class CameraRequest extends AsyncTask<Void, Void, Boolean> {
         if (success) {
             if (onorOff) {
                 //turning camera on
-                MainActivity.makeSession();
+                MainActivity.makeSession(newFolder);
             } else {
                 //turning camera off
                 MainActivity.endSession();
@@ -95,5 +101,20 @@ public class CameraRequest extends AsyncTask<Void, Void, Boolean> {
 
     @Override
     protected void onCancelled() {
+    }
+
+    private void processReturnInput(InputStream inputStream) throws IOException, JSONException {
+        BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(inputStream));
+        String line = "";
+        String result = "";
+        while((line = bufferedReader.readLine()) != null) {
+            result += line;
+        }
+
+        inputStream.close();
+
+        JSONObject data = new JSONObject(result);
+
+        newFolder = data.getString("folder");
     }
 }
