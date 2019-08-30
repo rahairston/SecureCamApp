@@ -3,7 +3,6 @@ package com.securecam.securecam;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,17 +25,20 @@ public class CameraRequest extends AsyncTask<Void, Void, Boolean> {
 
     JSONObject postData;
     String newFolder;
+    String mAuthorization;
 
     // This is a constructor that allows you to pass in the JSON body
     public CameraRequest(Map<String, String> data) {
         onorOff = (data.get("switch").equals("on")) ? true : false;
-        cameraURL += "/" + data.get("switch");
+        cameraURL += "/camera";
+        mAuthorization = data.get("authorization");
 
         postData = new JSONObject();
+
         try {
-            postData.put("password", data.get("password"));
+            postData.put("action", data.get("switch"));
         } catch (JSONException e) {
-            Log.e("Error", "JSON error");
+            Log.e("JSON", "Not able to add JSON");
         }
     }
 
@@ -56,6 +58,7 @@ public class CameraRequest extends AsyncTask<Void, Void, Boolean> {
             urlConnection.setDoOutput(true);
 
             urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.setRequestProperty("Authorization", mAuthorization);
 
             urlConnection.setRequestMethod("POST");
 

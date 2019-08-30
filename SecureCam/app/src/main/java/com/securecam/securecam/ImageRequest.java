@@ -26,13 +26,13 @@ public class ImageRequest extends AsyncTask<Void, Void, Boolean> {
 
     // This is the data we are sending
     String img;
-    String mPassword;
+    String mAuthorization;
     Bitmap image;
 
     // This is a constructor that allows you to pass in the JSON body
     public ImageRequest(Map<String, String> data) {
         img = data.get("image");
-        mPassword = data.get("password");
+        mAuthorization = data.get("authorization");
     }
 
 
@@ -50,7 +50,7 @@ public class ImageRequest extends AsyncTask<Void, Void, Boolean> {
             urlConnection.setDoInput(true);
 
             urlConnection.setRequestProperty("Content-Type", "application/json");
-            urlConnection.setRequestProperty("password", mPassword);
+            urlConnection.setRequestProperty("Authorization", mAuthorization);
             urlConnection.setRequestProperty("picture", img);
 
             urlConnection.setRequestMethod("GET");

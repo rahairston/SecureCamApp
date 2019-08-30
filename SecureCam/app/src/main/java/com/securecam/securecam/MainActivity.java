@@ -35,7 +35,7 @@ import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements ImageFragment.OnFragmentInteractionListener {
 
-    private static String password;
+    private static String authorization;
     protected static Context context;
 
     //CameraRequest data
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements ImageFragment.OnF
         layout = (ConstraintLayout)findViewById(R.id.layout);
 
         Intent intentBundle = getIntent();
-        password = intentBundle.getStringExtra("password");
+        authorization = intentBundle.getStringExtra("authorization");
         isOn = intentBundle.getBooleanExtra("isOn", false);
         back = (LinearLayout)findViewById(R.id.back);
         headers = (LinearLayout)findViewById(R.id.headers);
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements ImageFragment.OnF
                 snapshot.startAnimation(anim);
                 back.setAlpha(0.7f);
                 HashMap<String, String> data = new HashMap<>();
-                data.put("password", password);
+                data.put("authorization", authorization);
                 SnapshotRequest req = new SnapshotRequest(data);
                 req.execute((Void) null);
             }
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements ImageFragment.OnF
         onOff.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 HashMap<String, String> data = new HashMap<>();
-                data.put("password", password);
+                data.put("authorization", authorization);
                 if (isChecked) {
                     // make request to on
                     data.put("switch", "on");
@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements ImageFragment.OnF
 
         images = new ArrayList<>();
 
-        ImagesRequest req = new ImagesRequest(password);
+        ImagesRequest req = new ImagesRequest(authorization);
         req.execute((Void) null);
     }
 
@@ -140,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements ImageFragment.OnF
             t.setTextSize(20);
 
             //Dropdown listener will request images when the text is clicked
-            t.setOnClickListener(new DropDownListener(text, images, password));
+            t.setOnClickListener(new DropDownListener(text, images, authorization));
 
             headers.addView(t);
         }

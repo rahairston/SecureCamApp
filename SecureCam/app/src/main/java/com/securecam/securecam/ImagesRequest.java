@@ -22,14 +22,14 @@ public class ImagesRequest extends AsyncTask<Void, Void, Boolean> {
     final String imgURL = LoginActivity.IPANDPORT + "/pictures";
 
     // This is the data we are sending
-    String mPassword;
+    String mAuthorization;
 
     //Arraylist of strings
     ArrayList<String> images;
 
     // This is a constructor that allows you to pass in the JSON body
-    public ImagesRequest(String password) {
-        mPassword = password;
+    public ImagesRequest(String authorization) {
+        mAuthorization = authorization;
         images = new ArrayList<>();
     }
 
@@ -48,7 +48,7 @@ public class ImagesRequest extends AsyncTask<Void, Void, Boolean> {
             urlConnection.setDoInput(true);
 
             urlConnection.setRequestProperty("Content-Type", "application/json");
-            urlConnection.setRequestProperty("password", mPassword);
+            urlConnection.setRequestProperty("Authorization", mAuthorization);
 
             urlConnection.setRequestMethod("GET");
 

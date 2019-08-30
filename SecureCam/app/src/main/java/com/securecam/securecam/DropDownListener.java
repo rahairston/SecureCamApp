@@ -31,13 +31,13 @@ public class DropDownListener implements View.OnClickListener {
      * as well as setup the ImageRequest data here as well
      * @param text the text of the TextView (without ">" or "v" for substring prevention)
      * @param pictures the names of all pictures to be filtered for this dropdown specifically
-     * @param password the password for image request
+     * @param authorization the basic auth for image request
      */
-    DropDownListener(String text, ArrayList<String> pictures, String password) {
+    DropDownListener(String text, ArrayList<String> pictures, String authorization) {
         dropText = text;
         downloaded = dropped = false;
         data = new HashMap<>();
-        data.put("password", password);
+        data.put("authorization", authorization);
         images = new ArrayList<>();
         for(String p : pictures) {
             if (p.contains(text)) {

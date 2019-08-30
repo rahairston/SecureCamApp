@@ -19,12 +19,12 @@ public class SnapshotRequest extends AsyncTask<Void, Void, Boolean> {
     final String imgURL = LoginActivity.IPANDPORT + "/snapshot";
 
     // This is the data we are sending
-    String mPassword;
+    String mAuthorization;
     Bitmap image;
 
     // This is a constructor that allows you to pass in the JSON body
     public SnapshotRequest(Map<String, String> data) {
-        mPassword = data.get("password");
+        mAuthorization = data.get("authorization");
     }
 
     @Override
@@ -39,7 +39,7 @@ public class SnapshotRequest extends AsyncTask<Void, Void, Boolean> {
             urlConnection.setDoInput(true);
 
             urlConnection.setRequestProperty("Content-Type", "application/json");
-            urlConnection.setRequestProperty("password", mPassword);
+            urlConnection.setRequestProperty("Authorization", mAuthorization);
 
             urlConnection.setRequestMethod("GET");
 
