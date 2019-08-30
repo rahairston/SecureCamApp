@@ -42,7 +42,7 @@ public class ImageRequest extends AsyncTask<Void, Void, Boolean> {
 
         try {
             // This is getting the url from the string we passed in
-            URL url = new URL(imgURL);
+            URL url = new URL(imgURL + "/" + img);
 
             // Create the urlConnection
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -51,7 +51,6 @@ public class ImageRequest extends AsyncTask<Void, Void, Boolean> {
 
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setRequestProperty("Authorization", mAuthorization);
-            urlConnection.setRequestProperty("picture", img);
 
             urlConnection.setRequestMethod("GET");
 
